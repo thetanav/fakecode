@@ -3,7 +3,7 @@ import { createClient } from "redis";
 const client = createClient();
 
 async function processSubmission(submission: string) {
-  const { problemId, code, language } = JSON.parse(submission!);
+  const { problemId, userId, code, language, subId } = JSON.parse(submission!);
 
   console.log(`Processing submission for problemId ${problemId}...`);
   console.log(`Code: ${code}`);
@@ -12,8 +12,8 @@ async function processSubmission(submission: string) {
 
   // Simulate processing delay
   await new Promise((resolve) => setTimeout(resolve, 1000));
-  console.log(`Finished processing submission for problemId ${problemId}.`);
-  client.publish("problem_done", JSON.stringify({ problemId, status: "TLE" }));
+
+  client.publish(`sub:${subId}`, JSON.stringify({ subId, status: "ACCEPTED" }));
 }
 
 async function main() {
@@ -22,7 +22,7 @@ async function main() {
 
   while (true) {
     try {
-      const submissions = await client.brPop("submissions", 0);
+      const submissions = await client.brPop("sub", 0);
       await processSubmission(submissions!.element);
     } catch (error) {
       console.error("Error processing submission:", error);
