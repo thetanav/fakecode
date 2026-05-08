@@ -8,8 +8,13 @@ import cors from "cors";
 const app = express();
 app.use(express.json());
 app.use(cors());
-const client = createClient();
-const subscriberClient = createClient();
+console.log("REDIS_URL", process.env.REDIS_URL);
+const client = createClient({
+  url: process.env.REDIS_URL,
+});
+const subscriberClient = createClient({
+  url: process.env.REDIS_URL,
+});
 
 // Connect to Redis
 (async () => {
@@ -30,7 +35,7 @@ app.post("/submit", async (req, res) => {
   try {
     await client.lPush(
       "sub",
-      JSON.stringify({ problemId, userId, code, language, subId })
+      JSON.stringify({ problemId, userId, code, language, subId }),
     );
     res.json({
       message: "Submission received",
